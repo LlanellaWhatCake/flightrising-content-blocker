@@ -102,7 +102,6 @@
 
     }
 
-    let isBlocking = false;
     let showSettings = false;
 
 
@@ -147,10 +146,6 @@
 
     function doContentBlockCheck() {
 
-        let dragonInfoPage = false;
-        let lairPage = false;
-        let inventory = false;
-        let forums = false;
         //NO marketplace as that might cause a gameplay advantage - you can blur out things you're not interested in to get items you do want faster?
 
         let needToBlockDragonProfile = false; //**need to eventually make it where you can block a single dragon on a lair while keeping others! */
@@ -159,7 +154,6 @@
         //dragon profiles=====================
         //block dragon, familiar, apparel, skins, vistas, items in description, tooltips if possible
         if (document.getElementsByClassName("dragon-profile-stat-icon-value").length > 1) {
-            dragonInfoPage = true;
 
             let dragonInfoPieces = document.getElementsByClassName("dragon-profile-stat-icon-value");
             let familiarInfo = document.getElementById("dragon-profile-familiar-type");
@@ -196,23 +190,36 @@
 
             //check familiar image and tooltip if dragon has a familiar
             if (familiarInfo) {
-                let tokens = familiarInfo.textContent;
-                tokens = tokens.split(" ");
+                let tokens = [familiarInfo.textContent];
 
                 if (tokens.some(token => {
                     let included = familiarsBlocked.includes(token);
                     if (included) containsList.push(token);
                     return included;
                 })) {
-                    needToBlockDragonProfile = true;
+                    blockFamiliarInfoPage();
                 }
             }
+
+            createBlockInformationDiv();
 
             function blockDragonInfoPage() {
                 let dragonImageFrame = document.getElementById("dragon-profile-dragon-frame");
                 let dragonImage = dragonImageFrame.getElementsByTagName("img")[0];
 
                 dragonImage.style.filter = 'blur(20px)';
+            }
+
+            function blockFamiliarInfoPage() {
+                let familiarImage = document.getElementsByClassName("common-animated-familiar-frame")[0];
+
+                familiarImage.style.filter = 'blur(20px)';
+
+            }
+
+            function createBlockInformationDiv() {
+                let dragonImageFrame = document.getElementById("dragon-profile-dragon-frame");
+                let dragonImage = dragonImageFrame.getElementsByTagName("img")[0];
 
                 let blockInfoContainer = document.createElement("div");
                 blockInfoContainer.style = "position: fixed; left: -150px; z-index: 1000; width: 150px";
@@ -226,8 +233,6 @@
                 blockInfoContainer.appendChild(blockNotice);
 
                 document.getElementById("dragon-profile-dragon-frame").insertBefore(blockInfoContainer, dragonImage);
-
-                isBlocking = true;
             }
         }
     }
