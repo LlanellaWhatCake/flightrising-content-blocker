@@ -114,6 +114,7 @@
     let familiarsBlocked = userSettings.familiarsBlocked;
     let vistasBlocked = userSettings.vistasBlocked; //don't forget vistas can appear on dragon profiles too!
     let skinIDsBlocked = userSettings.skinIDsBlocked;
+    //TODO: maybe try to block images hosted offsite if the dragon/familiar on the page is blocked for extra saftey?  Since there may be art of them!
 
     doContentBlockCheck();
     addSettingsWidget();
@@ -152,7 +153,7 @@
         let forums = false;
         //NO marketplace as that might cause a gameplay advantage - you can blur out things you're not interested in to get items you do want faster?
 
-        let needToBlock = false; //**need to eventually make it where you can block a single dragon on a lair while keeping others! */
+        let needToBlockDragonProfile = false; //**need to eventually make it where you can block a single dragon on a lair while keeping others! */
         let containsList = [];
 
         //dragon profiles=====================
@@ -162,6 +163,7 @@
 
             let dragonInfoPieces = document.getElementsByClassName("dragon-profile-stat-icon-value");
             let familiarInfo = document.getElementById("dragon-profile-familiar-type");
+
             let blockMapping = {
                 0: primaryGenesBlocked,
                 1: secondaryGenesBlocked,
@@ -173,6 +175,7 @@
                 7: skinIDsBlocked
             }
 
+            //check dragon image
             for (let i = 0; i < dragonInfoPieces.length; i++) {
                 //prep
                 let tokens = dragonInfoPieces.item(i).textContent;
@@ -186,14 +189,28 @@
                         if (included) containsList.push(token);
                         return included;
                     })) {
-                        needToBlock = true;
+                        blockDragonInfoPage();
                     }
-                })
-
+                });
             }
 
-            if (needToBlock && !isBlocking) {
-                let dragonImage = document.getElementById("dragon-profile-dragon-frame").firstElementChild;
+            //check familiar image and tooltip if dragon has a familiar
+            if (familiarInfo) {
+                let tokens = familiarInfo.textContent;
+                tokens = tokens.split(" ");
+
+                if (tokens.some(token => {
+                    let included = familiarsBlocked.includes(token);
+                    if (included) containsList.push(token);
+                    return included;
+                })) {
+                    needToBlockDragonProfile = true;
+                }
+            }
+
+            function blockDragonInfoPage() {
+                let dragonImageFrame = document.getElementById("dragon-profile-dragon-frame");
+                let dragonImage = dragonImageFrame.getElementsByTagName("img")[0];
 
                 dragonImage.style.filter = 'blur(20px)';
 
@@ -202,43 +219,15 @@
                 blockInfoContainer.id = "block-info-container";
 
                 let blockNotice = document.createElement("p");
-                let blockText = document.createTextNode("This dragon contains blocked elements - " + containsList);
+                let blockText = document.createTextNode("This page contains blocked elements - " + containsList);
                 blockNotice.style = "background: #d4bb77; padding: 5px; border-radius: 5px; color: black;";
                 blockNotice.appendChild(blockText);
 
-                let unBlockButton = document.createElement("button");
-                let unBlockText = document.createTextNode("Show this dragon");
-                unBlockButton.style = "left: -150px; z-index: 1000; width: 150px"
-                unBlockButton.id = "unblock-button";
-
-                unBlockButton.appendChild(unBlockText);
-
                 blockInfoContainer.appendChild(blockNotice);
-                blockInfoContainer.appendChild(unBlockButton);
 
                 document.getElementById("dragon-profile-dragon-frame").insertBefore(blockInfoContainer, dragonImage);
-                let unblockRef = document.getElementById("unblock-button");
 
                 isBlocking = true;
-
-                unBlockButton.onclick = function () {
-                    needToBlock = !needToBlock;
-                    isBlocking = !isBlocking;
-
-                    if (needToBlock) {
-                        dragonImage.style.filter = 'blur(20px)';
-                        unblockRef.innerHTML = "Show this dragon"
-                    } else {
-                        dragonImage.style.filter = 'none';
-                        unblockRef.innerHTML = "Hide this dragon";
-                    }
-                }
-            } else if (!needToBlock && isBlocking) { //if you recently deleted something but haven't refreshed yet
-                document.getElementById("block-info-container").remove();
-
-                let dragonImage = document.getElementById("dragon-profile-dragon-frame").firstElementChild;
-                dragonImage.style.filter = 'none';
-                isBlocking = false;
             }
         }
     }
