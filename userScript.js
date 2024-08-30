@@ -487,7 +487,10 @@
                                 ...userSettings, [blockedContentObjectName]: blockedContentCheck
                             }));
 
-                            document.getElementById(`${sectionName}-gene_` + newGeneLabel).remove();
+                            let toRemove = document.getElementById(`${sectionName}-gene_` + newGeneLabel.replace(" ", "_"));
+                            if (toRemove) {
+                                toRemove.remove();
+                            }
 
                             refreshUserSettings();
                             doContentBlockCheck();
