@@ -23,13 +23,15 @@
             familiarsBlocked: [],
             vistasBlocked: [],
             skinIDsBlocked: [],
-            apparelBlocked: []
+            apparelBlocked: [],
+            scenesBlocked: []
         }));
 
         userSettings = JSON.parse(localStorage.getItem("flightRisingContentBlocker"));
     }
 
-    let blockingCategories = ["primary", "secondary", "tertiary", "eyes", "items", "familiars", "vistas", "skins", "apparel"];
+    let blockingCategories = ["primary", "secondary", "tertiary", "eyes", "items",
+        "familiars", "vistas", "skins", "apparel", "scenes"];
 
     let vistaNameIDMap = {
         thirdAnniversary: 15,
@@ -65,7 +67,8 @@
         familiarsBlocked: [],
         vistasBlocked: [],
         skinIDsBlocked: [],
-        apparelBlocked: []
+        apparelBlocked: [],
+        scenesBlocked: []
     };
 
     let trypophobiaLoadout = {
@@ -77,7 +80,8 @@
         familiarsBlocked: [],
         vistasBlocked: [],
         skinIDsBlocked: [],
-        apparelBlocked: []
+        apparelBlocked: [],
+        scenesBlocked: []
     };
 
     let entomophobiaLoadout = { //include aethers here!  They're technically bug dragons
@@ -89,7 +93,8 @@
         familiarsBlocked: [],
         vistasBlocked: [],
         skinIDsBlocked: [],
-        apparelBlocked: []
+        apparelBlocked: [],
+        scenesBlocked: []
     };
 
     let diseaseInjuryLoadout = {
@@ -101,7 +106,8 @@
         familiarsBlocked: [],
         vistasBlocked: [],
         skinIDsBlocked: [],
-        apparelBlocked: []
+        apparelBlocked: [],
+        scenesBlocked: []
     };
 
     let salivaGoopLoadout = {
@@ -111,15 +117,16 @@
     let showSettings = false;
 
 
-    let primaryGenesBlocked = userSettings.primaryGenesBlocked; //***use localStorage to save these!
-    let secondaryGenesBlocked = userSettings.secondaryGenesBlocked;
-    let tertiaryGenesBlocked = userSettings.tertiaryGenesBlocked;
-    let eyesBlocked = userSettings.eyesBlocked;
-    let itemsBlocked = userSettings.itemsBlocked; //items can also appear on dragon pages and forum posts, as well as lair pages
-    let familiarsBlocked = userSettings.familiarsBlocked;
-    let vistasBlocked = userSettings.vistasBlocked; //don't forget vistas can appear on dragon profiles too!
-    let skinIDsBlocked = userSettings.skinIDsBlocked;
-    let apparelBlocked = userSettings.apparelBlocked;
+    let primaryGenesBlocked = userSettings.primaryGenesBlocked || []; //***use localStorage to save these!
+    let secondaryGenesBlocked = userSettings.secondaryGenesBlocked || [];
+    let tertiaryGenesBlocked = userSettings.tertiaryGenesBlocked || [];
+    let eyesBlocked = userSettings.eyesBlocked || [];
+    let itemsBlocked = userSettings.itemsBlocked || []; //items can also appear on dragon pages and forum posts, as well as lair pages
+    let familiarsBlocked = userSettings.familiarsBlocked || [];
+    let vistasBlocked = userSettings.vistasBlocked || []; //don't forget vistas can appear on dragon profiles too!
+    let skinIDsBlocked = userSettings.skinIDsBlocked || [];
+    let apparelBlocked = userSettings.apparelBlocked || [];
+    let scenesBlocked = userSettings.scenesBlocked || [];
     //TODO: maybe try to block images hosted offsite if the dragon/familiar on the page is blocked for extra saftey?  Since there may be art of them!
 
     doContentBlockCheck();
@@ -137,20 +144,22 @@
                 familiarsBlocked: [],
                 vistasBlocked: [],
                 skinIDsBlocked: [],
-                apparelBlocked: []
+                apparelBlocked: [],
+                scenesBlocked: []
             }));
         }
 
 
-        primaryGenesBlocked = userSettings.primaryGenesBlocked; //***use localStorage to save these!
-        secondaryGenesBlocked = userSettings.secondaryGenesBlocked;
-        tertiaryGenesBlocked = userSettings.tertiaryGenesBlocked;
-        eyesBlocked = userSettings.eyesBlocked;
-        itemsBlocked = userSettings.itemsBlocked;
-        familiarsBlocked = userSettings.familiarsBlocked;
-        vistasBlocked = userSettings.vistasBlocked; //don't forget vistas can appear on dragon profiles too!
-        skinIDsBlocked = userSettings.skinIDsBlocked;
-        apparelBlocked = userSettings.apparelBlocked;
+        primaryGenesBlocked = userSettings.primaryGenesBlocked || []; //***use localStorage to save these!
+        secondaryGenesBlocked = userSettings.secondaryGenesBlocked || [];
+        tertiaryGenesBlocked = userSettings.tertiaryGenesBlocked || [];
+        eyesBlocked = userSettings.eyesBlocked || [];
+        itemsBlocked = userSettings.itemsBlocked || [];
+        familiarsBlocked = userSettings.familiarsBlocked || [];
+        vistasBlocked = userSettings.vistasBlocked || []; //don't forget vistas can appear on dragon profiles too!
+        skinIDsBlocked = userSettings.skinIDsBlocked || [];
+        apparelBlocked = userSettings.apparelBlocked || [];
+        scenesBlocked = userSettings.scenesBlocked || [];
     }
 
     function doContentBlockCheck() {
@@ -180,7 +189,8 @@
                 5: familiarsBlocked,
                 6: vistasBlocked,
                 7: skinIDsBlocked,
-                8: apparelBlocked
+                8: apparelBlocked,
+                9: scenesBlocked
             }
 
             //check dragon image=======================
@@ -237,6 +247,21 @@
                 });
             }
 
+            //scenes =============================
+            if (scenesBlocked.length > 0) {
+                let sceneBg = document.getElementById("dragon-profile-scene");
+                let sceneBgTokens = sceneBg.style.backgroundImage.split("/");
+                let sceneID = sceneBgTokens[sceneBgTokens.length - 1] ? sceneBgTokens[sceneBgTokens.length - 1]?.split(".")[0] : null;
+
+                if ([sceneID].some(token => {
+                    let included = scenesBlocked.includes(token);
+                    if (included) containsList.push(token);
+                    return included;
+                })) {
+                    blockScenes(sceneBg);
+                }
+            }
+
             //Do items and tooltips last since familiars and apparel items also use tooltips!  Better to do all at once
 
 
@@ -261,6 +286,10 @@
             function blockApparelImages(apparelImage) {
                 //can only block dragon image on dragon info page since lair doesn't list apparel items
                 apparelImage.style.filter = 'blur(20px)';
+            }
+
+            function blockScenes(sceneBg) {
+                sceneBg.style = "background: white; background-image: none";
             }
 
             function blockItemsAndItemHovers() {
@@ -392,6 +421,10 @@
                 case 'apparel':
                     blockedContentCheck = apparelBlocked;
                     blockedContentObjectName = "apparelBlocked";
+                    break;
+                case 'scenes':
+                    blockedContentCheck = scenesBlocked;
+                    blockedContentObjectName = "scenesBlocked";
                     break;
                 default:
                     break;
